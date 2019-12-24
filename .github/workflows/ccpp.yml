@@ -1,0 +1,30 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build-windows:
+
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - uses: olafurpg/setup-scala@v6
+    - name: clone_td
+      run: git clone https://github.com/tdlib/td.git ; cd td
+    - name: configure_vcpkg
+      run: git clone https://github.com/Microsoft/vcpkg.git ; cd vcpkg ; ./bootstrap-vcpkg.bat ; ./vcpkg.exe install openssl:x64-windows zlib:x64-windows ; cd ..
+    - name: setup build directory
+      run: mkdir build ; cd build
+    - name: configure cmake
+      run: cmake -A x64 -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON -DCMAKE_TOOLCHAIN_FILE:FILEPATH=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
+    - name: run cmake
+      run: cmake --build . --target install --config Release
+    - name: go to jni
+      run: cd ../example/java ; mkdir build; cd build
+    - name: configure jni cmake
+      run: cmake -A x64 -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DCMAKE_TOOLCHAIN_FILE:FILEPATH=../../../vcpkg/scripts/buildsystems/vcpkg.cmake -DTd_DIR:PATH=$(Resolve-Path ../td/lib/cmake/Td) ..
+    - name: run cmake
+      run: cmake --build . --target install --config Release
+    - name: show result
+      run: cd ../../../.. ; dir td/tdlib

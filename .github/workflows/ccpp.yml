@@ -10,11 +10,10 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v6
-    - uses: khs1994-docker/actions-setup-php@0.0.1
+    - name: install php
+      run: choco install php
     - name: install gperf
-      uses: crazy-max/ghaction-chocolatey@v1.0.2
-      with:
-        args: install gperf
+      run: choco install gperf
     - name: clone_td
       run: git clone https://github.com/tdlib/td.git
     - name: configure_vcpkg
@@ -29,7 +28,7 @@ jobs:
     - name: run cmake
       working-directory: ./td/build
       run: cmake --build . --target install --config Release
-    - name: go to jni
+    - name: mkdir jni build directory
       working-directory: ./td/example/java
       run: mkdir build
     - name: configure jni cmake

@@ -11,20 +11,28 @@ jobs:
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v6
     - name: clone_td
-      run: git clone https://github.com/tdlib/td.git ; cd td
+      run: git clone https://github.com/tdlib/td.git
     - name: configure_vcpkg
-      run: git clone https://github.com/Microsoft/vcpkg.git ; cd vcpkg ; ./bootstrap-vcpkg.bat ; ./vcpkg.exe install openssl:x64-windows zlib:x64-windows ; cd ..
+      working-directory: ./td
+      run: git clone https://github.com/Microsoft/vcpkg.git ; cd vcpkg ; ./bootstrap-vcpkg.bat ; ./vcpkg.exe install openssl:x64-windows zlib:x64-windows
     - name: setup build directory
-      run: mkdir build ; cd build
+      working-directory: ./td
+      run: mkdir build
     - name: configure cmake
+      working-directory: ./td/build
       run: cmake -A x64 -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON -DCMAKE_TOOLCHAIN_FILE:FILEPATH=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
     - name: run cmake
+      working-directory: ./td/build
       run: cmake --build . --target install --config Release
     - name: go to jni
-      run: cd ../example/java ; mkdir build; cd build
+      working-directory: ./td/example/java
+      run: mkdir build
     - name: configure jni cmake
+      working-directory: ./td/example/java/build
       run: cmake -A x64 -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DCMAKE_TOOLCHAIN_FILE:FILEPATH=../../../vcpkg/scripts/buildsystems/vcpkg.cmake -DTd_DIR:PATH=$(Resolve-Path ../td/lib/cmake/Td) ..
     - name: run cmake
+      working-directory: ./td/example/java/build
       run: cmake --build . --target install --config Release
     - name: show result
-      run: cd ../../../.. ; dir td/tdlib
+      working-directory: ./td
+      run: dir tdlib

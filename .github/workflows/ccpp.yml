@@ -10,6 +10,11 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v6
+    - uses: khs1994-docker/actions-setup-php@0.0.1
+    - name: install gperf
+      uses: crazy-max/ghaction-chocolatey@v1.0.2
+      with:
+        args: install gperf
     - name: clone_td
       run: git clone https://github.com/tdlib/td.git
     - name: configure_vcpkg

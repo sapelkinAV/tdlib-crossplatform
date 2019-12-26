@@ -3,6 +3,46 @@ name: C/C++ CI
 on: [push]
 
 jobs:
+  build-linux:
+    runs-on: [ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v1
+    - uses: olafurpg/setup-scala@v6
+    - name: install requirments
+      run: sudo apt-get update ; sudo apt-get upgrade ; sudo apt-get install make git zlib1g-dev libssl-dev gperf php cmake default-jdk clang-6.0 libc++-dev libc++abi-dev
+    - name: clone td
+      run: git clone https://github.com/tdlib/td.git
+    - name: setup build directory
+      working-directory: ./td
+      run: mkdir build
+    - name: configure cmake
+      working-directory: ./td/build
+      run: export CXXFLAGS="-stdlib=libc++" ; CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON -DCMAKE_AR=/usr/bin/llvm-ar-6.0 -DCMAKE_NM=/usr/bin/llvm-nm-6.0 -DCMAKE_OBJDUMP=/usr/bin/llvm-objdump-6.0 -DCMAKE_RANLIB=/usr/bin/llvm-ranlib-6.0 .. 
+    - name: compile tdlib
+      working-directory: ./td/build
+      run: cmake --build . --target install
+    - name: setup build directory for jni
+      working-directory: ./td/example/java
+      run: mkdir build
+    - name: setup cmake
+      working-directory: ./td/example/java/build
+      run: CC=/usr/bin/clang-6.0 CXX=/usr/bin/clang++-6.0 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr/local -DTd_DIR:PATH=$(readlink -e ../td/lib/cmake/Td) -DCMAKE_AR=/usr/bin/llvm-ar-6.0 -DCMAKE_NM=/usr/bin/llvm-nm-6.0 -DCMAKE_OBJDUMP=/usr/bin/llvm-objdump-6.0 -DCMAKE_RANLIB=/usr/bin/llvm-ranlib-6.0 ..
+    - name: compile jni
+      working-directory: ./td/example/java/build
+      run: cmake --build . --target install
+    - name: show result
+      run: ls -l /usr/local
+    - name: upload whole directory
+      uses: actions/upload-artifact@v1
+      with:
+        name: td
+        path: ./td
+    - name: upload "/usr/local" directory
+      uses: actions/upload-artifact@v1
+      with:
+        name: tdlib_usr_local
+        path: /usr/local
+        
   build-windows:
 
     runs-on: windows-latest
@@ -40,3 +80,13 @@ jobs:
     - name: show result
       working-directory: ./td
       run: dir tdlib
+    - name: upload whole directory
+      uses: actions/upload-artifact@v1
+      with:
+        name: td
+        path: ./td
+    - name: upload build directory
+      uses: actions/upload-artifact@v1
+      with:
+        name: td
+        path: ./td/tdlib

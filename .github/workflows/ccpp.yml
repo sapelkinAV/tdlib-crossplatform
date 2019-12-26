@@ -9,7 +9,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: olafurpg/setup-scala@v6
     - name: install requirments
-      run: sudo apt-get update ; sudo apt-get upgrade ; sudo apt-get install make git zlib1g-dev libssl-dev gperf php cmake default-jdk clang-6.0 libc++-dev libc++abi-dev
+      run: sudo apt-get update ; sudo apt-get install make git zlib1g-dev libssl-dev gperf php cmake default-jdk clang-6.0 libc++-dev libc++abi-dev
     - name: clone td
       run: git clone https://github.com/tdlib/td.git
     - name: setup build directory
